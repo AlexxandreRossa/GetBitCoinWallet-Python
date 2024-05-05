@@ -1,17 +1,23 @@
-from flask import Flask, jsonify
-from bitcoinlib.wallets import Wallet
+import requests
+import json
+import xmlrpc.server
 
-app = Flask(__name__)
+def get_bitcoin_balance(account):
+    api_url = f"https://blockchain.info/balance?active={account}"
 
-def get_balance(address):
-    wallet = Wallet()
-    balance = wallet.get_balance(address)
-    return balance
+    try:
+        response = requests.get(api_url)
+        data = response.json()
+        balance = data[account]['final_balance'] / 100000000
+        return balance
+    except Exception as e:
+        print("Erro ao consultar saldo da conta Bitcoin:", e)
+        return None
 
-@app.route('/balance/<address>', methods=['GET'])
-def balance(address):
-    balance = get_balance(address)
-    return jsonify({'address': address, 'balance': balance})
 
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+server = xmlrpc.server.SimpleXMLRPCServer(("localhost", 8000))
+server.register_function(get_bitcoin_balance, "get_balance")
+
+
+print("Servidor RPC iniciado em localhost:8000...")
+server.serve_forever()

@@ -1,12 +1,10 @@
-import requests
+import xmlrpc.client
 
-def get_balance(address):
-    url = f'http://localhost:5000/balance/{address}'
-    response = requests.get(url)
-    data = response.json()
-    return data
+def get_balance_from_server(account):
+    proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+    bitcoin_balance = proxy.get_balance(account)
+    return bitcoin_balance
 
-if __name__ == '__main__':
-    address = input("Insira o endereço da conta Bitcoin: ")
-    balance_data = get_balance(address)
-    print(f"Saldo da conta {balance_data['address']}: {balance_data['balance']}")
+account = "3FXuhCd2rXhFSDca5hzQ5qdZYK4z42z2RS"
+balance = get_balance_from_server(account)
+print(f"Saldo da conta {account}: {balance} BTC")
